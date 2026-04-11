@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ImagesRepository } from './images.repository';
+import { ImagesRepository } from './repository/images.repository';
 import type {
   CreateImageInput,
   Image,

@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ImagesService } from './images.service';
 import { ImagesController } from './images.controller';
-import { ImagesRepository } from './images.repository';
+import { ImagesRepository } from './repository/images.repository';
+import { TypeOrmImagesRepository } from './repository/typeorm-images.repository';
 import { ImageOrmEntity } from './entities/image.entity';
 import { ImageProcessor } from './processor/image.processor';
 import { ImageStorage } from './storage/image.storage';
@@ -13,7 +14,10 @@ import { SharpImageProcessor } from './processor/sharp-image.processor';
   imports: [TypeOrmModule.forFeature([ImageOrmEntity])],
   providers: [
     ImagesService,
-    ImagesRepository,
+    {
+      provide: ImagesRepository,
+      useClass: TypeOrmImagesRepository,
+    },
     {
       provide: ImageProcessor,
       useClass: SharpImageProcessor,

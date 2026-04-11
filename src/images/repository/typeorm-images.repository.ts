@@ -1,20 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ImageOrmEntity } from './entities/image.entity';
+import { ImageOrmEntity } from '../entities/image.entity';
+import { ImagesRepository } from './images.repository';
 import type {
   CreateImageRecord,
   ListImagesParams,
   PaginatedResult,
   PersistedImage,
-} from './images.types';
+} from '../images.types';
 
 @Injectable()
-export class ImagesRepository {
+export class TypeOrmImagesRepository extends ImagesRepository {
   constructor(
     @InjectRepository(ImageOrmEntity)
     private readonly ormRepository: Repository<ImageOrmEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
   async save(image: CreateImageRecord): Promise<PersistedImage> {
     const entity = this.ormRepository.create(image);
