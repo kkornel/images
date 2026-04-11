@@ -64,17 +64,14 @@ export class ImagesService {
     return this.toImage(persistedImage);
   }
 
-  async findAll(
-    params: Partial<ListImagesParams> = {},
-  ): Promise<PaginatedResult<Image>> {
-    const normalizedParams = this.normalizeListImagesParams(params);
-    const result = await this.imageRepository.findAll(normalizedParams);
+  async findAll(params: ListImagesParams): Promise<PaginatedResult<Image>> {
+    const result = await this.imageRepository.findAll(params);
 
     return {
       items: result.items.map((image) => this.toImage(image)),
       total: result.total,
-      page: normalizedParams.page,
-      limit: normalizedParams.limit,
+      page: result.page,
+      limit: result.limit,
       totalPages: result.totalPages,
     };
   }
@@ -91,18 +88,6 @@ export class ImagesService {
       size: image.size,
       createdAt: image.createdAt,
       updatedAt: image.updatedAt,
-    };
-  }
-
-  private normalizeListImagesParams(
-    params: Partial<ListImagesParams>,
-  ): ListImagesParams {
-    return {
-      page: Math.max(DEFAULT_IMAGES_PAGE, params.page ?? DEFAULT_IMAGES_PAGE),
-      limit: Math.min(
-        MAX_IMAGES_LIMIT,
-        Math.max(MIN_IMAGES_LIMIT, params.limit ?? DEFAULT_IMAGES_LIMIT),
-      ),
     };
   }
 
