@@ -8,7 +8,9 @@ import {
   type ProcessImageInput,
 } from './image.processor';
 
-const JPEG_QUALITY = 82;
+const NORMALIZED_OUTPUT_MIME_TYPE = 'image/jpeg';
+const NORMALIZED_OUTPUT_EXTENSION = 'jpg';
+const NORMALIZED_JPEG_QUALITY = 82;
 
 @Injectable()
 export class SharpImageProcessor extends ImageProcessor {
@@ -23,7 +25,7 @@ export class SharpImageProcessor extends ImageProcessor {
           withoutEnlargement: true,
         })
         .jpeg({
-          quality: JPEG_QUALITY,
+          quality: NORMALIZED_JPEG_QUALITY,
           mozjpeg: true,
         })
         .toBuffer({
@@ -32,7 +34,7 @@ export class SharpImageProcessor extends ImageProcessor {
 
       if (!info.width || !info.height) {
         throw new InvalidImageFileException(
-          'Unable to determine processed image dimensions.',
+          'Unable to determine normalized image dimensions.',
         );
       }
 
@@ -40,8 +42,8 @@ export class SharpImageProcessor extends ImageProcessor {
         buffer: data,
         width: info.width,
         height: info.height,
-        mimeType: 'image/jpeg',
-        extension: 'jpg',
+        mimeType: NORMALIZED_OUTPUT_MIME_TYPE,
+        extension: NORMALIZED_OUTPUT_EXTENSION,
         size: data.byteLength,
       };
     } catch (error) {
@@ -50,7 +52,7 @@ export class SharpImageProcessor extends ImageProcessor {
       }
 
       throw new InvalidImageFileException(
-        'Uploaded file is not a supported image or could not be processed.',
+        'Uploaded file is not a supported image or could not be normalized to JPEG.',
       );
     }
   }
