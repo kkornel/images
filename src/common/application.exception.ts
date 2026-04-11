@@ -1,8 +1,10 @@
+import type { ApplicationErrorCode } from './application-error-codes';
+
 export type ApplicationExceptionDetails = Readonly<Record<string, unknown>>;
 
 export class ApplicationException extends Error {
   constructor(
-    public readonly code: string,
+    public readonly code: ApplicationErrorCode,
     message: string,
     public readonly details?: ApplicationExceptionDetails,
   ) {

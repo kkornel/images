@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
+import { APPLICATION_ERROR_CODES } from '@/common/application-error-codes';
 import { ApplicationException } from '@/common/application.exception';
 
 type ErrorResponseBody = {
@@ -16,9 +17,19 @@ type ErrorResponseBody = {
   details?: unknown;
 };
 
-const APPLICATION_ERROR_STATUS_CODES: Readonly<Record<string, number>> = {
-  invalid_image_file: HttpStatus.BAD_REQUEST,
-  image_storage_error: HttpStatus.SERVICE_UNAVAILABLE,
+const APPLICATION_ERROR_STATUS_CODES = {
+  [APPLICATION_ERROR_CODES.INVALID_IMAGE_FILE]: HttpStatus.BAD_REQUEST,
+  [APPLICATION_ERROR_CODES.IMAGE_STORAGE_ERROR]: HttpStatus.SERVICE_UNAVAILABLE,
+} as const;
+
+const HTTP_EXCEPTION_CODES: Record<number, string> = {
+  [HttpStatus.BAD_REQUEST]: 'bad_request',
+  [HttpStatus.UNAUTHORIZED]: 'unauthorized',
+  [HttpStatus.FORBIDDEN]: 'forbidden',
+  [HttpStatus.NOT_FOUND]: 'not_found',
+  [HttpStatus.CONFLICT]: 'conflict',
+  [HttpStatus.PAYLOAD_TOO_LARGE]: 'payload_too_large',
+  [HttpStatus.UNPROCESSABLE_ENTITY]: 'unprocessable_entity',
 };
 
 @Catch()
@@ -68,7 +79,9 @@ export class ApplicationExceptionFilter implements ExceptionFilter {
     } satisfies ErrorResponseBody);
   }
 
-  private resolveApplicationStatusCode(code: string): number {
+  private resolveApplicationStatusCode(
+    code: ApplicationException['code'],
+  ): number {
     return (
       APPLICATION_ERROR_STATUS_CODES[code] ?? HttpStatus.INTERNAL_SERVER_ERROR
     );
@@ -99,16 +112,6 @@ export class ApplicationExceptionFilter implements ExceptionFilter {
   }
 
   private resolveHttpExceptionCode(statusCode: number): string {
-    const statusToCode: Record<number, string> = {
-      [HttpStatus.BAD_REQUEST]: 'bad_request',
-      [HttpStatus.UNAUTHORIZED]: 'unauthorized',
-      [HttpStatus.FORBIDDEN]: 'forbidden',
-      [HttpStatus.NOT_FOUND]: 'not_found',
-      [HttpStatus.CONFLICT]: 'conflict',
-      [HttpStatus.PAYLOAD_TOO_LARGE]: 'payload_too_large',
-      [HttpStatus.UNPROCESSABLE_ENTITY]: 'unprocessable_entity',
-    };
-
-    return statusToCode[statusCode] ?? 'http_exception';
+    return HTTP_EXCEPTION_CODES[statusCode] ?? 'http_exception';
   }
 }
