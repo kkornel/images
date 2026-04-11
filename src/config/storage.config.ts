@@ -1,10 +1,16 @@
 import { registerAs } from '@nestjs/config';
 
-export default registerAs('storage', () => ({
-  region: process.env.AWS_REGION || '',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  bucket: process.env.AWS_S3_BUCKET || '',
-  endpoint: process.env.AWS_S3_ENDPOINT || '',
-  forcePathStyle: process.env.AWS_S3_FORCE_PATH_STYLE === 'true',
-}));
+import { getValidatedEnvironment } from '@/config/validation/environment.validation';
+
+export default registerAs('storage', () => {
+  const environment = getValidatedEnvironment();
+
+  return {
+    region: environment.AWS_REGION,
+    accessKeyId: environment.AWS_ACCESS_KEY_ID,
+    secretAccessKey: environment.AWS_SECRET_ACCESS_KEY,
+    bucket: environment.AWS_S3_BUCKET,
+    endpoint: environment.AWS_S3_ENDPOINT,
+    forcePathStyle: environment.AWS_S3_FORCE_PATH_STYLE,
+  };
+});
