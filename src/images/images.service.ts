@@ -7,20 +7,30 @@ import type {
   ListImagesParams,
   PaginatedResult,
 } from './images.types';
+import { ImagesProcessor } from './processor/images.processor';
 
 @Injectable()
 export class ImagesService {
-  constructor(private readonly imagesRepository: ImagesRepository) {}
+  constructor(
+    private readonly imagesRepository: ImagesRepository,
+    private readonly imagesProcessor: ImagesProcessor,
+  ) {}
 
-  create(input: CreateImageInput): Promise<Image> {
+  async create(input: CreateImageInput): Promise<Image> {
+    const processed = await this.imagesProcessor.process({
+      fileBuffer: input.file,
+      targetWidth: input.width,
+      targetHeight: input.height,
+    });
+
     return this.imagesRepository.save({
       uuid: randomUUID(),
       title: input.title,
-      width: input.width,
-      height: input.height,
-      extension: 'png',
-      size: 123,
-      mimeType: 'image/png',
+      width: processed.width,
+      height: processed.height,
+      extension: processed.extension,
+      size: processed.size,
+      mimeType: processed.mimeType,
       storageKey: 'image.png',
     });
   }

@@ -1,4 +1,5 @@
 export interface CreateImageInput {
+  file: Buffer;
   title: string;
   width: number;
   height: number;

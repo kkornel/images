@@ -15,6 +15,10 @@ type ErrorResponseBody = {
   details?: unknown;
 };
 
+const APPLICATION_ERROR_STATUS_CODES: Readonly<Record<string, number>> = {
+  invalid_image_file: HttpStatus.BAD_REQUEST,
+};
+
 @Catch()
 export class ApplicationExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
@@ -62,9 +66,10 @@ export class ApplicationExceptionFilter implements ExceptionFilter {
     } satisfies ErrorResponseBody);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private resolveApplicationStatusCode(code: string): number {
-    return HttpStatus.INTERNAL_SERVER_ERROR;
+    return (
+      APPLICATION_ERROR_STATUS_CODES[code] ?? HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   private extractHttpExceptionMessage(exceptionResponse: unknown): string {
