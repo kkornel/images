@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
 
@@ -34,6 +35,8 @@ const HTTP_EXCEPTION_CODES: Record<number, string> = {
 
 @Catch()
 export class ApplicationExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApplicationExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
@@ -48,6 +51,17 @@ export class ApplicationExceptionFilter implements ExceptionFilter {
 
       if (exception.details !== undefined) {
         body.details = exception.details;
+      }
+
+      if (statusCode >= 500) {
+        this.logger.error(
+          `Application exception: ${exception.code}`,
+          exception.stack,
+        );
+      } else {
+        this.logger.warn(
+          `Application exception: ${exception.code} (${statusCode})`,
+        );
       }
 
       response.status(statusCode).json(body);
@@ -71,6 +85,11 @@ export class ApplicationExceptionFilter implements ExceptionFilter {
       response.status(statusCode).json(body);
       return;
     }
+
+    this.logger.error(
+      'Unhandled exception reached global exception filter',
+      exception instanceof Error ? exception.stack : undefined,
+    );
 
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
