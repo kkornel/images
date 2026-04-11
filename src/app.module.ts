@@ -3,6 +3,7 @@ import { ConfigModule, ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import databaseConfig from './config/database.config';
         synchronize: database.synchronize,
       }),
     }),
+    ImagesModule,
   ],
   controllers: [],
   providers: [],

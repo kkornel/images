@@ -9,7 +9,7 @@ import {
 @Entity({ name: 'images' })
 export class ImageOrmEntity {
   @PrimaryColumn('uuid')
-  id: string;
+  uuid: string;
 
   @Column({ type: 'varchar', length: 255 })
   title: string;
