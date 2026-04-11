@@ -8,13 +8,14 @@ import {
 } from '@/images/image-pagination.constants';
 
 export class ListImagesQueryDto {
-  @IsOptional()
   @Type(() => Number)
   @IsInt()
-  page?: number;
+  @Min(1)
+  page: number = DEFAULT_IMAGES_PAGE;
 
-  @IsOptional()
   @Type(() => Number)
   @IsInt()
-  size?: number;
+  @Min(1)
+  @Max(MAX_IMAGES_LIMIT)
+  size: number = DEFAULT_IMAGES_LIMIT;
 }
