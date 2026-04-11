@@ -9,10 +9,14 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ImagesService } from './images.service';
-import { CreateImageDto, ListImagesQueryDto } from './dto/image.dto';
-import { ImageFileValidationPipe } from './pipes/image-file-validation.pipe';
+import type { Express } from 'express';
+
+import { CreateImageDto } from './dto/create-image.dto';
+import { ListImagesQueryDto } from './dto/list-images-query.dto';
 import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';
+import { ImagesService } from './images.service';
+import { ImageFileValidationPipe } from './pipes/image-file-validation.pipe';
+import type { Image, PaginatedResult } from './image.types';
 
 @Controller('images')
 export class ImagesController {
@@ -20,34 +24,30 @@ export class ImagesController {
 
   @Post()
   @UseInterceptors(ImageUploadInterceptor)
-  async createImage(
+  async create(
     @UploadedFile(ImageFileValidationPipe) file: Express.Multer.File,
     @Body() body: CreateImageDto,
-  ) {
-    const image = await this.imagesService.create({
-      file: file.buffer,
+  ): Promise<Image> {
+    return this.imagesService.create({
+      fileBuffer: file.buffer,
       title: body.title,
       width: body.width,
       height: body.height,
     });
-
-    return image;
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const image = await this.imagesService.findOne(id);
-
-    return image;
+  @Get(':uuid')
+  async findOne(@Param('uuid', ParseUUIDPipe) uuid: string): Promise<Image> {
+    return this.imagesService.findOne(uuid);
   }
 
   @Get()
-  async findAll(@Query() query: ListImagesQueryDto) {
-    const result = await this.imagesService.findAll({
+  async findAll(
+    @Query() query: ListImagesQueryDto,
+  ): Promise<PaginatedResult<Image>> {
+    return this.imagesService.findAll({
       page: query.page,
       limit: query.size,
     });
-
-    return result;
   }
 }

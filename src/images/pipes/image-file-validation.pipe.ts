@@ -1,5 +1,8 @@
 import { ParseFilePipeBuilder } from '@nestjs/common';
-import { MAX_UPLOAD_SIZE_BYTES, SUPPORTED_IMAGE_TYPES } from '../images.config';
+import {
+  MAX_UPLOAD_SIZE_BYTES,
+  SUPPORTED_IMAGE_TYPES,
+} from '../image-upload.constants';
 
 export const ImageFileValidationPipe = new ParseFilePipeBuilder()
   .addFileTypeValidator({

@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
+
 import { ImageOrmEntity } from '../entities/image.entity';
-import { ImagesRepository } from './images.repository';
+import { ImageRepository } from './image.repository';
 import type {
   CreateImageRecord,
   ListImagesParams,
   PaginatedResult,
   PersistedImage,
-} from '../images.types';
+} from '../image.types';
 
 @Injectable()
-export class TypeOrmImagesRepository extends ImagesRepository {
+export class TypeOrmImageRepository extends ImageRepository {
   constructor(
     @InjectRepository(ImageOrmEntity)
     private readonly ormRepository: Repository<ImageOrmEntity>,
@@ -19,14 +20,14 @@ export class TypeOrmImagesRepository extends ImagesRepository {
     super();
   }
 
-  async save(image: CreateImageRecord): Promise<PersistedImage> {
+  async create(image: CreateImageRecord): Promise<PersistedImage> {
     const entity = this.ormRepository.create(image);
     const savedEntity = await this.ormRepository.save(entity);
 
     return this.toPersistedImage(savedEntity);
   }
 
-  async findById(uuid: string): Promise<PersistedImage | null> {
+  async findByUuid(uuid: string): Promise<PersistedImage | null> {
     const entity = await this.ormRepository.findOne({
       where: { uuid },
     });

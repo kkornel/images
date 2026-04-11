@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import sharp from 'sharp';
+
 import { InvalidImageFileException } from '../errors/invalid-image-file.exception';
 import {
   ImageProcessor,
@@ -10,7 +11,7 @@ import {
 const JPEG_QUALITY = 82;
 
 @Injectable()
-export class SharpImageProcessor implements ImageProcessor {
+export class SharpImageProcessor extends ImageProcessor {
   async process(input: ProcessImageInput): Promise<ProcessedImage> {
     try {
       const { data, info } = await sharp(input.fileBuffer)

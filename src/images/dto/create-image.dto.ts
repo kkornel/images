@@ -2,7 +2,6 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsString,
   Max,
   MaxLength,
@@ -29,19 +28,4 @@ export class CreateImageDto {
   @Min(1)
   @Max(4000)
   height: number;
-}
-
-export class ListImagesQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  size?: number = 20;
 }

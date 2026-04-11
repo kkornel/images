@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ConfigModule, type ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ImagesModule } from './images/images.module';
+
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import storageConfig from './config/storage.config';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [

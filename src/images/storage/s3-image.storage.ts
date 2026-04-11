@@ -5,12 +5,14 @@ import {
 } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import { ImageStorageException } from './image-storage.exception';
+
 import storageConfig from 'src/config/storage.config';
-import { ImageStorage, type StoreImageObjectInput } from './image.storage';
+
+import { ImageStorageException } from './image-storage.exception';
+import { ImageStorage, type StoreImageInput } from './image.storage';
 
 @Injectable()
-export class S3ImageStorage implements ImageStorage {
+export class S3ImageStorage extends ImageStorage {
   private readonly client: S3Client;
   private readonly bucket: string;
   private readonly region: string;
@@ -21,6 +23,8 @@ export class S3ImageStorage implements ImageStorage {
     @Inject(storageConfig.KEY)
     config: ConfigType<typeof storageConfig>,
   ) {
+    super();
+
     this.bucket = config.bucket;
     this.region = config.region;
     this.endpoint = config.endpoint;
@@ -37,7 +41,7 @@ export class S3ImageStorage implements ImageStorage {
     });
   }
 
-  async upload(input: StoreImageObjectInput): Promise<void> {
+  async upload(input: StoreImageInput): Promise<void> {
     try {
       const command = new PutObjectCommand({
         Bucket: this.bucket,
