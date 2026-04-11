@@ -1,16 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ImagesModule } from './images/images.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
-import { ImagesModule } from './images/images.module';
+import storageConfig from './config/storage.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, databaseConfig, storageConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [databaseConfig.KEY],

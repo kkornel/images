@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { ImageOrmEntity } from './entities/image.entity';
 import type {
   CreateImageRecord,
-  Image,
   ListImagesParams,
   PaginatedResult,
+  PersistedImage,
 } from './images.types';
 
 @Injectable()
@@ -16,22 +16,24 @@ export class ImagesRepository {
     private readonly ormRepository: Repository<ImageOrmEntity>,
   ) {}
 
-  async save(image: CreateImageRecord): Promise<Image> {
+  async save(image: CreateImageRecord): Promise<PersistedImage> {
     const entity = this.ormRepository.create(image);
     const savedEntity = await this.ormRepository.save(entity);
 
-    return this.toImage(savedEntity);
+    return this.toPersistedImage(savedEntity);
   }
 
-  async findById(uuid: string): Promise<Image | null> {
+  async findById(uuid: string): Promise<PersistedImage | null> {
     const entity = await this.ormRepository.findOne({
       where: { uuid },
     });
 
-    return entity ? this.toImage(entity) : null;
+    return entity ? this.toPersistedImage(entity) : null;
   }
 
-  async findAll(params: ListImagesParams): Promise<PaginatedResult<Image>> {
+  async findAll(
+    params: ListImagesParams,
+  ): Promise<PaginatedResult<PersistedImage>> {
     const skip = (params.page - 1) * params.limit;
 
     const [entities, total] = await this.ormRepository.findAndCount({
@@ -43,7 +45,7 @@ export class ImagesRepository {
     });
 
     return {
-      items: entities.map((entity) => this.toImage(entity)),
+      items: entities.map((entity) => this.toPersistedImage(entity)),
       total,
       page: params.page,
       limit: params.limit,
@@ -51,7 +53,7 @@ export class ImagesRepository {
     };
   }
 
-  private toImage(entity: ImageOrmEntity): Image {
+  private toPersistedImage(entity: ImageOrmEntity): PersistedImage {
     return {
       uuid: entity.uuid,
       title: entity.title,

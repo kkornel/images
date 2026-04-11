@@ -16,12 +16,7 @@ export interface CreateImageRecord {
   size: number;
 }
 
-export interface ListImagesParams {
-  page: number;
-  limit: number;
-}
-
-export interface Image {
+export interface PersistedImage {
   uuid: string;
   title: string;
   storageKey: string;
@@ -32,6 +27,24 @@ export interface Image {
   size: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface Image {
+  uuid: string;
+  title: string;
+  url: string;
+  mimeType: string;
+  extension: string;
+  width: number;
+  height: number;
+  size: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ListImagesParams {
+  page: number;
+  limit: number;
 }
 
 export interface PaginatedResult<T> {

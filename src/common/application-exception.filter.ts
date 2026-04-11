@@ -17,6 +17,7 @@ type ErrorResponseBody = {
 
 const APPLICATION_ERROR_STATUS_CODES: Readonly<Record<string, number>> = {
   invalid_image_file: HttpStatus.BAD_REQUEST,
+  image_storage_error: HttpStatus.SERVICE_UNAVAILABLE,
 };
 
 @Catch()

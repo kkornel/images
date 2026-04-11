@@ -6,33 +6,52 @@ import type {
   Image,
   ListImagesParams,
   PaginatedResult,
+  PersistedImage,
 } from './images.types';
 import { ImagesProcessor } from './processor/images.processor';
+import { ImageStorage } from './storage/image.storage';
 
 @Injectable()
 export class ImagesService {
   constructor(
     private readonly imagesRepository: ImagesRepository,
     private readonly imagesProcessor: ImagesProcessor,
+    private readonly imageStorage: ImageStorage,
   ) {}
 
   async create(input: CreateImageInput): Promise<Image> {
-    const processed = await this.imagesProcessor.process({
+    const processedImage = await this.imagesProcessor.process({
       fileBuffer: input.file,
       targetWidth: input.width,
       targetHeight: input.height,
     });
 
-    return this.imagesRepository.save({
-      uuid: randomUUID(),
-      title: input.title,
-      width: processed.width,
-      height: processed.height,
-      extension: processed.extension,
-      size: processed.size,
-      mimeType: processed.mimeType,
-      storageKey: 'image.png',
+    const imageId = randomUUID();
+    const storageKey = `${imageId}.${processedImage.extension}`;
+
+    await this.imageStorage.upload({
+      key: storageKey,
+      body: processedImage.buffer,
+      contentType: processedImage.mimeType,
     });
+
+    try {
+      const savedImage = await this.imagesRepository.save({
+        uuid: imageId,
+        title: input.title,
+        storageKey,
+        mimeType: processedImage.mimeType,
+        extension: processedImage.extension,
+        width: processedImage.width,
+        height: processedImage.height,
+        size: processedImage.size,
+      });
+
+      return this.toPublicImage(savedImage);
+    } catch (error) {
+      await this.tryRollbackUpload(storageKey);
+      throw error;
+    }
   }
 
   async findOne(uuid: string): Promise<Image> {
@@ -42,15 +61,46 @@ export class ImagesService {
       throw new NotFoundException(`Image with uuid "${uuid}" was not found`);
     }
 
-    return image;
+    return this.toPublicImage(image);
   }
 
-  findAll(
+  async findAll(
     params: Partial<ListImagesParams> = {},
   ): Promise<PaginatedResult<Image>> {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.max(1, params.limit ?? 20);
 
-    return this.imagesRepository.findAll({ page, limit });
+    const result = await this.imagesRepository.findAll({ page, limit });
+
+    return {
+      items: result.items.map((image) => this.toPublicImage(image)),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    };
+  }
+
+  private toPublicImage(image: PersistedImage): Image {
+    return {
+      uuid: image.uuid,
+      title: image.title,
+      url: this.imageStorage.resolveUrl(image.storageKey),
+      mimeType: image.mimeType,
+      extension: image.extension,
+      width: image.width,
+      height: image.height,
+      size: image.size,
+      createdAt: image.createdAt,
+      updatedAt: image.updatedAt,
+    };
+  }
+
+  private async tryRollbackUpload(storageKey: string): Promise<void> {
+    try {
+      await this.imageStorage.delete(storageKey);
+    } catch {
+      // Best-effort cleanup only. The original error remains the primary root cause
+    }
   }
 }
