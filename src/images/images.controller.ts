@@ -13,12 +13,11 @@ import type { Express } from 'express';
 
 import type { Image } from '@/images/types/image.model';
 import type { PaginatedResult } from '@/images/types/paginated-result.type';
-import { CreateImageDto } from './dto/create-image.dto';
-import { ListImagesQueryDto } from './dto/list-images-query.dto';
-import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';
-import { ImagesService } from './images.service';
-import { ImageFileValidationPipe } from './pipes/image-file-validation.pipe';
-import type { Image, PaginatedResult } from './image.types';
+import { CreateImageDto } from '@/images/dto/create-image.dto';
+import { ListImagesQueryDto } from '@/images/dto/list-images-query.dto';
+import { ImageUploadInterceptor } from '@/images/interceptors/image-upload.interceptor';
+import { ImagesService } from '@/images/images.service';
+import { ImageFileValidationPipe } from '@/images/pipes/image-file-validation.pipe';
 
 @Controller('images')
 export class ImagesController {
