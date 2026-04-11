@@ -6,7 +6,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 
-import storageConfig from 'src/config/storage.config';
+import storageConfig from '@/config/storage.config';
 
 import { ImageStorageException } from './image-storage.exception';
 import { ImageStorage, type StoreImageInput } from './image.storage';

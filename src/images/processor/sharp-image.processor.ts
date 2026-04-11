@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import sharp from 'sharp';
 
-import { InvalidImageFileException } from '../errors/invalid-image-file.exception';
+import { InvalidImageFileException } from '@/images/errors/invalid-image-file.exception';
 import {
   ImageProcessor,
   type ProcessedImage,

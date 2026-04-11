@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import type { Express } from 'express';
 
+import type { Image } from '@/images/types/image.model';
+import type { PaginatedResult } from '@/images/types/paginated-result.type';
 import { CreateImageDto } from './dto/create-image.dto';
 import { ListImagesQueryDto } from './dto/list-images-query.dto';
 import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';

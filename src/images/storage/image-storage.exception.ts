@@ -1,4 +1,4 @@
-import { ApplicationException } from 'src/common/application.exception';
+import { ApplicationException } from '@/common/application.exception';
 
 export class ImageStorageException extends ApplicationException {
   constructor(operation: 'upload' | 'delete', reason?: string) {

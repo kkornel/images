@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, type ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import appConfig from './config/app.config';
-import databaseConfig from './config/database.config';
-import storageConfig from './config/storage.config';
-import { ImagesModule } from './images/images.module';
+import appConfig from '@/config/app.config';
+import databaseConfig from '@/config/database.config';
+import storageConfig from '@/config/storage.config';
+import { ImagesModule } from '@/images/images.module';
 
 @Module({
   imports: [
@@ -29,7 +29,5 @@ import { ImagesModule } from './images/images.module';
     }),
     ImagesModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

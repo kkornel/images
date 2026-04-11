@@ -6,7 +6,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { ApplicationException } from './application.exception';
+
+import { ApplicationException } from '@/common/application.exception';
 
 type ErrorResponseBody = {
   statusCode: number;

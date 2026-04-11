@@ -2,14 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
-import { ImageOrmEntity } from '../entities/image.entity';
+import { ImageOrmEntity } from '@/images/entities/image.entity';
+import type { ListImagesParams } from '@/images/types/list-images.params';
+import type { PaginatedResult } from '@/images/types/paginated-result.type';
+
 import { ImageRepository } from './image.repository';
 import type {
   CreateImageRecord,
   ListImagesParams,
   PaginatedResult,
   PersistedImage,
-} from '../image.types';
+} from './image.repository.types';
 
 @Injectable()
 export class TypeOrmImageRepository extends ImageRepository {

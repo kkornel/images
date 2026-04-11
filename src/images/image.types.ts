@@ -1,56 +1,8 @@
-export interface CreateImageInput {
-  fileBuffer: Buffer;
-  title: string;
-  width: number;
-  height: number;
-}
-
-export interface CreateImageRecord {
-  uuid: string;
-  title: string;
-  storageKey: string;
-  mimeType: string;
-  extension: string;
-  width: number;
-  height: number;
-  size: number;
-}
-
-export interface PersistedImage {
-  uuid: string;
-  title: string;
-  storageKey: string;
-  mimeType: string;
-  extension: string;
-  width: number;
-  height: number;
-  size: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Image {
-  uuid: string;
-  title: string;
-  url: string;
-  mimeType: string;
-  extension: string;
-  width: number;
-  height: number;
-  size: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ListImagesParams {
-  page: number;
-  limit: number;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+export type { CreateImageInput } from './types/create-image.input';
+export type { Image } from './types/image.model';
+export type { ListImagesParams } from './types/list-images.params';
+export type { PaginatedResult } from './types/paginated-result.type';
+export type {
+  CreateImageRecord,
+  PersistedImage,
+} from './repository/image.repository.types';

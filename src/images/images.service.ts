@@ -5,18 +5,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ImageProcessor } from './processor/image.processor';
 import { ImageRepository } from './repository/image.repository';
 import { ImageStorage } from './storage/image.storage';
-import type {
-  CreateImageInput,
-  Image,
-  ListImagesParams,
-  PaginatedResult,
-  PersistedImage,
-} from './image.types';
-
-const DEFAULT_IMAGES_PAGE = 1;
-const MIN_IMAGES_LIMIT = 1;
-const DEFAULT_IMAGES_LIMIT = 20;
-const MAX_IMAGES_LIMIT = 100;
+import type { PersistedImage } from './repository/image.repository.types';
+import type { CreateImageInput } from './types/create-image.input';
+import type { Image } from './types/image.model';
+import type { ListImagesParams } from './types/list-images.params';
+import type { PaginatedResult } from './types/paginated-result.type';
 
 @Injectable()
 export class ImagesService {
