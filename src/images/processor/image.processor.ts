@@ -12,3 +12,7 @@ export interface ProcessedImage {
   extension: string;
   size: number;
 }
+
+export abstract class ImageProcessor {
+  abstract process(input: ProcessImageInput): Promise<ProcessedImage>;
+}

@@ -8,19 +8,19 @@ import type {
   PaginatedResult,
   PersistedImage,
 } from './images.types';
-import { ImagesProcessor } from './processor/images.processor';
+import { ImageProcessor } from './processor/image.processor';
 import { ImageStorage } from './storage/image.storage';
 
 @Injectable()
 export class ImagesService {
   constructor(
     private readonly imagesRepository: ImagesRepository,
-    private readonly imagesProcessor: ImagesProcessor,
+    private readonly imageProcessor: ImageProcessor,
     private readonly imageStorage: ImageStorage,
   ) {}
 
   async create(input: CreateImageInput): Promise<Image> {
-    const processedImage = await this.imagesProcessor.process({
+    const processedImage = await this.imageProcessor.process({
       fileBuffer: input.file,
       targetWidth: input.width,
       targetHeight: input.height,
