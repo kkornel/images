@@ -3,8 +3,6 @@ import type { PaginatedResult } from '@/images/types/paginated-result.type';
 
 import type {
   CreateImageRecord,
-  ListImagesParams,
-  PaginatedResult,
   PersistedImage,
 } from './image.repository.types';
 
