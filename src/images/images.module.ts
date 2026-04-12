@@ -1,32 +1,29 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { ImageOrmEntity } from '@/images/entities/image.entity';
-import { ImagesController } from '@/images/images.controller';
-import { ImagesService } from '@/images/images.service';
-import { ImageProcessor } from '@/images/processor/image.processor';
-import { SharpImageProcessor } from '@/images/processor/sharp-image.processor';
-import { ImageRepository } from '@/images/repository/image.repository';
-import { TypeOrmImageRepository } from '@/images/repository/typeorm-image.repository';
-import { ImageStorage } from '@/images/storage/image.storage';
-import { S3ImageStorage } from '@/images/storage/s3-image.storage';
+import { CreateImageUseCase } from '@/images/application/ports/in/create-image.use-case';
+import { GetImageUseCase } from '@/images/application/ports/in/get-image.use-case';
+import { ListImagesUseCase } from '@/images/application/ports/in/list-images.use-case';
+import { CreateImageService } from '@/images/application/use-cases/create-image.service';
+import { GetImageService } from '@/images/application/use-cases/get-image.service';
+import { ListImagesService } from '@/images/application/use-cases/list-images.service';
+import { ImagesController } from '@/images/presentation/http/images.controller';
+import { ImagesInfrastructureModule } from '@/images/infrastructure/images-infrastructure.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ImageOrmEntity])],
+  imports: [ImagesInfrastructureModule],
   controllers: [ImagesController],
   providers: [
-    ImagesService,
     {
-      provide: ImageRepository,
-      useClass: TypeOrmImageRepository,
+      provide: CreateImageUseCase,
+      useClass: CreateImageService,
     },
     {
-      provide: ImageProcessor,
-      useClass: SharpImageProcessor,
+      provide: GetImageUseCase,
+      useClass: GetImageService,
     },
     {
-      provide: ImageStorage,
-      useClass: S3ImageStorage,
+      provide: ListImagesUseCase,
+      useClass: ListImagesService,
     },
   ],
 })
