@@ -1,18 +1,18 @@
-import {
-  INestApplication,
-  NotFoundException,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { Server } from 'http';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
+import { APPLICATION_ERROR_CODES } from '../src/common/application-error-codes';
 import { ApplicationExceptionFilter } from '../src/common/application-exception.filter';
+import { ApplicationException } from '../src/common/application.exception';
+import { CreateImageUseCase } from '../src/images/application/ports/in/create-image.use-case';
+import { GetImageUseCase } from '../src/images/application/ports/in/get-image.use-case';
+import { ListImagesUseCase } from '../src/images/application/ports/in/list-images.use-case';
+import type { ImageResult } from '../src/images/application/results/image.result';
+import type { PaginatedResult } from '../src/images/application/results/paginated-result';
 import { InvalidImageFileException } from '../src/images/errors/invalid-image-file.exception';
-import { ImagesController } from '../src/images/images.controller';
-import { ImagesService } from '../src/images/images.service';
-import type { Image } from '../src/images/types/image.model';
-import type { PaginatedResult } from '../src/images/types/paginated-result.type';
+import { ImagesController } from '../src/images/presentation/http/images.controller';
 
 type ErrorResponseBody = {
   statusCode: number;
@@ -20,10 +20,10 @@ type ErrorResponseBody = {
   message: string | string[];
 };
 
-function makeImage(overrides: Partial<Image> = {}): Image {
+function makeImage(overrides: Partial<ImageResult> = {}): ImageResult {
   return {
     uuid: '550e8400-e29b-41d4-a716-446655440000',
-    title: 'Sunset',
+    title: 'Cat',
     url: 'https://cdn.example.com/550e8400-e29b-41d4-a716-446655440000.jpg',
     mimeType: 'image/jpeg',
     extension: 'jpg',
@@ -43,7 +43,7 @@ function makeValidPngBuffer(): Buffer {
   );
 }
 
-function serializeImage(image: Image) {
+function serializeImage(image: ImageResult) {
   return {
     uuid: image.uuid,
     title: image.title,
@@ -62,12 +62,16 @@ describe('Images HTTP API (e2e)', () => {
   let app: INestApplication;
   let httpServer: Server;
 
-  const imagesServiceMock: jest.Mocked<
-    Pick<ImagesService, 'create' | 'findOne' | 'findAll'>
-  > = {
-    create: jest.fn(),
-    findOne: jest.fn(),
-    findAll: jest.fn(),
+  const createImageUseCaseMock: jest.Mocked<CreateImageUseCase> = {
+    execute: jest.fn(),
+  };
+
+  const getImageUseCaseMock: jest.Mocked<GetImageUseCase> = {
+    execute: jest.fn(),
+  };
+
+  const listImagesUseCaseMock: jest.Mocked<ListImagesUseCase> = {
+    execute: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -75,8 +79,16 @@ describe('Images HTTP API (e2e)', () => {
       controllers: [ImagesController],
       providers: [
         {
-          provide: ImagesService,
-          useValue: imagesServiceMock,
+          provide: CreateImageUseCase,
+          useValue: createImageUseCaseMock,
+        },
+        {
+          provide: GetImageUseCase,
+          useValue: getImageUseCaseMock,
+        },
+        {
+          provide: ListImagesUseCase,
+          useValue: listImagesUseCaseMock,
         },
       ],
     }).compile();
@@ -107,30 +119,26 @@ describe('Images HTTP API (e2e)', () => {
       const uploadedBuffer = makeValidPngBuffer();
       const createdImage = makeImage();
 
-      imagesServiceMock.create.mockResolvedValue(createdImage);
+      createImageUseCaseMock.execute.mockResolvedValue(createdImage);
 
       const response = await request(httpServer)
         .post('/images')
-        .field('title', '  Sunset  ')
+        .field('title', '  Cat  ')
         .field('width', '1920')
         .field('height', '1080')
         .attach('file', uploadedBuffer, {
-          filename: 'sunset.png',
+          filename: 'cat.png',
           contentType: 'image/png',
         })
         .expect(201);
 
-      expect(imagesServiceMock.create).toHaveBeenCalledTimes(1);
+      expect(createImageUseCaseMock.execute).toHaveBeenCalledTimes(1);
 
-      const createArgument = imagesServiceMock.create.mock.calls[0]?.[0];
+      const createArgument = createImageUseCaseMock.execute.mock.calls[0]?.[0];
 
       expect(createArgument).toBeDefined();
 
-      if (!createArgument) {
-        throw new Error('Expected create to be called with an image payload');
-      }
-
-      expect(createArgument.title).toBe('Sunset');
+      expect(createArgument.title).toBe('Cat');
       expect(createArgument.width).toBe(1920);
       expect(createArgument.height).toBe(1080);
       expect(createArgument.fileBuffer.equals(uploadedBuffer)).toBe(true);
@@ -140,12 +148,12 @@ describe('Images HTTP API (e2e)', () => {
     it('returns a validation error when the file is missing', async () => {
       const response = await request(httpServer)
         .post('/images')
-        .field('title', 'Sunset')
+        .field('title', 'Cat')
         .field('width', '1920')
         .field('height', '1080')
         .expect(400);
 
-      expect(imagesServiceMock.create).not.toHaveBeenCalled();
+      expect(createImageUseCaseMock.execute).not.toHaveBeenCalled();
       const responseBody = response.body as ErrorResponseBody;
 
       expect(responseBody.statusCode).toBe(400);
@@ -154,17 +162,17 @@ describe('Images HTTP API (e2e)', () => {
     });
 
     it('returns application errors using the global exception filter', async () => {
-      imagesServiceMock.create.mockRejectedValue(
+      createImageUseCaseMock.execute.mockRejectedValue(
         new InvalidImageFileException('Uploaded file could not be normalized.'),
       );
 
       const response = await request(httpServer)
         .post('/images')
-        .field('title', 'Sunset')
+        .field('title', 'Cat')
         .field('width', '1920')
         .field('height', '1080')
         .attach('file', makeValidPngBuffer(), {
-          filename: 'sunset.png',
+          filename: 'cat.png',
           contentType: 'image/png',
         })
         .expect(400);
@@ -181,13 +189,15 @@ describe('Images HTTP API (e2e)', () => {
     it('returns the image when the uuid is valid and the resource exists', async () => {
       const image = makeImage();
 
-      imagesServiceMock.findOne.mockResolvedValue(image);
+      getImageUseCaseMock.execute.mockResolvedValue(image);
 
       const response = await request(httpServer)
         .get('/images/' + image.uuid)
         .expect(200);
 
-      expect(imagesServiceMock.findOne).toHaveBeenCalledWith(image.uuid);
+      expect(getImageUseCaseMock.execute).toHaveBeenCalledWith({
+        uuid: image.uuid,
+      });
       expect(response.body).toEqual(serializeImage(image));
     });
 
@@ -196,7 +206,7 @@ describe('Images HTTP API (e2e)', () => {
         .get('/images/not-a-uuid')
         .expect(400);
 
-      expect(imagesServiceMock.findOne).not.toHaveBeenCalled();
+      expect(getImageUseCaseMock.execute).not.toHaveBeenCalled();
       const responseBody = response.body as ErrorResponseBody;
 
       expect(responseBody.statusCode).toBe(400);
@@ -204,12 +214,13 @@ describe('Images HTTP API (e2e)', () => {
       expect(responseBody.message).toContain('uuid');
     });
 
-    it('returns not_found when the service raises NotFoundException', async () => {
+    it('returns not_found when the use case raises an application exception', async () => {
       const missingUuid = '550e8400-e29b-41d4-a716-446655440001';
 
-      imagesServiceMock.findOne.mockRejectedValue(
-        new NotFoundException(
-          'Image with uuid "' + missingUuid + '" was not found',
+      getImageUseCaseMock.execute.mockRejectedValue(
+        new ApplicationException(
+          APPLICATION_ERROR_CODES.IMAGE_NOT_FOUND,
+          `Image with uuid ${missingUuid} was not found`,
         ),
       );
 
@@ -222,14 +233,14 @@ describe('Images HTTP API (e2e)', () => {
       expect(responseBody.statusCode).toBe(404);
       expect(responseBody.code).toBe('not_found');
       expect(responseBody.message).toBe(
-        'Image with uuid "' + missingUuid + '" was not found',
+        `Image with uuid ${missingUuid} was not found`,
       );
     });
   });
 
   describe('GET /images', () => {
     it('uses the DTO default pagination values when the query is omitted', async () => {
-      const paginatedResult: PaginatedResult<Image> = {
+      const paginatedResult: PaginatedResult<ImageResult> = {
         items: [makeImage()],
         total: 1,
         page: 1,
@@ -237,11 +248,11 @@ describe('Images HTTP API (e2e)', () => {
         totalPages: 1,
       };
 
-      imagesServiceMock.findAll.mockResolvedValue(paginatedResult);
+      listImagesUseCaseMock.execute.mockResolvedValue(paginatedResult);
 
       const response = await request(httpServer).get('/images').expect(200);
 
-      expect(imagesServiceMock.findAll).toHaveBeenCalledWith({
+      expect(listImagesUseCaseMock.execute).toHaveBeenCalledWith({
         page: 1,
         limit: 20,
       });
@@ -254,8 +265,8 @@ describe('Images HTTP API (e2e)', () => {
       });
     });
 
-    it('transforms query parameters before delegating to the service', async () => {
-      const paginatedResult: PaginatedResult<Image> = {
+    it('transforms query parameters before delegating to the use case', async () => {
+      const paginatedResult: PaginatedResult<ImageResult> = {
         items: [makeImage()],
         total: 1,
         page: 2,
@@ -263,14 +274,14 @@ describe('Images HTTP API (e2e)', () => {
         totalPages: 1,
       };
 
-      imagesServiceMock.findAll.mockResolvedValue(paginatedResult);
+      listImagesUseCaseMock.execute.mockResolvedValue(paginatedResult);
 
       await request(httpServer)
         .get('/images')
         .query({ page: '2', size: '5' })
         .expect(200);
 
-      expect(imagesServiceMock.findAll).toHaveBeenCalledWith({
+      expect(listImagesUseCaseMock.execute).toHaveBeenCalledWith({
         page: 2,
         limit: 5,
       });
@@ -282,7 +293,7 @@ describe('Images HTTP API (e2e)', () => {
         .query({ page: '0', size: '101' })
         .expect(400);
 
-      expect(imagesServiceMock.findAll).not.toHaveBeenCalled();
+      expect(listImagesUseCaseMock.execute).not.toHaveBeenCalled();
       const responseBody = response.body as ErrorResponseBody;
 
       expect(responseBody.statusCode).toBe(400);
