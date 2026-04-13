@@ -39,6 +39,23 @@ If you want to check which environment variables are required and how they are v
 docker-compose up
 ```
 
+## Database and migrations
+
+For migration-based development, set:
+
+```text
+DATABASE_SYNCHRONIZE=false
+```
+
+Common commands:
+
+```bash
+npm run migration:create -- src/infrastructure/persistence/typeorm/migrations/YourMigrationName
+npm run migration:generate -- src/infrastructure/persistence/typeorm/migrations/YourMigrationName
+npm run migration:run
+npm run migration:revert
+```
+
 ## Run the app
 
 Development mode:

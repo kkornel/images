@@ -11,6 +11,11 @@
     "npm": "11.11.0"
   },
   "scripts": {
+    "typeorm": "typeorm-ts-node-commonjs -d src/infrastructure/persistence/typeorm/data-source.ts",
+    "migration:create": "npm run typeorm -- migration:create",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert",
     "build": "nest build && tsc-alias -p tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
