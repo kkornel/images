@@ -1,6 +1,6 @@
 # Images API
 
-NestJS API for uploading, processing, storing, and listing images.
+NestJS API for uploading, processing, storing, listing, and deleting images.
 
 ## Requirements
 
