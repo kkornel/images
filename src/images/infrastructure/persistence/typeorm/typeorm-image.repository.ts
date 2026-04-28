@@ -7,6 +7,7 @@ import type { ListImagesQuery } from '@/images/application/queries/list-images.q
 import type { PaginatedResult } from '@/images/application/results/paginated-result';
 import type { Image, NewImage } from '@/images/domain/image';
 import { ImageOrmEntity } from '@/images/infrastructure/persistence/typeorm/image.orm-entity';
+import { ImageMapper } from '@/images/infrastructure/persistence/mappers/image.mapper';
 
 @Injectable()
 export class TypeOrmImageRepository extends ImageRepository {
@@ -21,7 +22,7 @@ export class TypeOrmImageRepository extends ImageRepository {
     const entity = this.ormRepository.create(image);
     const savedEntity = await this.ormRepository.save(entity);
 
-    return this.toImage(savedEntity);
+    return ImageMapper.toDomain(savedEntity);
   }
 
   async findByUuid(uuid: string): Promise<Image | null> {
@@ -29,7 +30,7 @@ export class TypeOrmImageRepository extends ImageRepository {
       where: { uuid },
     });
 
-    return entity ? this.toImage(entity) : null;
+    return entity ? ImageMapper.toDomain(entity) : null;
   }
 
   async findAll(params: ListImagesQuery): Promise<PaginatedResult<Image>> {
@@ -44,7 +45,7 @@ export class TypeOrmImageRepository extends ImageRepository {
     });
 
     return {
-      items: entities.map((entity) => this.toImage(entity)),
+      items: entities.map((entity) => ImageMapper.toDomain(entity)),
       total,
       page: params.page,
       limit: params.limit,
