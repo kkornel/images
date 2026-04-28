@@ -53,18 +53,9 @@ export class TypeOrmImageRepository extends ImageRepository {
     };
   }
 
-  private toImage(entity: ImageOrmEntity): Image {
-    return {
-      uuid: entity.uuid,
-      title: entity.title,
-      storageKey: entity.storageKey,
-      mimeType: entity.mimeType,
-      extension: entity.extension,
-      width: entity.width,
-      height: entity.height,
-      size: entity.size,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    };
+  async deleteByUuid(uuid: string): Promise<void> {
+    await this.ormRepository.delete({
+      uuid,
+    });
   }
 }

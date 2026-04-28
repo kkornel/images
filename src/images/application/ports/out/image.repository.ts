@@ -6,4 +6,5 @@ export abstract class ImageRepository {
   abstract create(image: NewImage): Promise<Image>;
   abstract findByUuid(uuid: string): Promise<Image | null>;
   abstract findAll(params: ListImagesQuery): Promise<PaginatedResult<Image>>;
+  abstract deleteByUuid(uuid: string): Promise<void>;
 }

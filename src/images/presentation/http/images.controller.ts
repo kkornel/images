@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Post,
@@ -13,11 +16,13 @@ import { ApiTags } from '@nestjs/swagger';
 import type { Express } from 'express';
 
 import { CreateImageUseCase } from '@/images/application/ports/in/create-image.use-case';
+import { DeleteImageUseCase } from '@/images/application/ports/in/delete-image.use-case';
 import { GetImageUseCase } from '@/images/application/ports/in/get-image.use-case';
 import { ListImagesUseCase } from '@/images/application/ports/in/list-images.use-case';
 import type { ImageResult } from '@/images/application/results/image.result';
 import type { PaginatedResult } from '@/images/application/results/paginated-result';
 import { CreateImageDocs } from '@/images/presentation/http/docs/create-image.docs';
+import { DeleteImageDocs } from '@/images/presentation/http/docs/delete-image.docs';
 import { GetImageDocs } from '@/images/presentation/http/docs/get-image.docs';
 import { ListImagesDocs } from '@/images/presentation/http/docs/list-images.docs';
 import { CreateImageDto } from '@/images/presentation/http/dto/create-image.dto';
@@ -35,6 +40,7 @@ export class ImagesController {
   constructor(
     private readonly createImageUseCase: CreateImageUseCase,
     private readonly getImageUseCase: GetImageUseCase,
+    private readonly deleteImageUseCase: DeleteImageUseCase,
     private readonly listImagesUseCase: ListImagesUseCase,
   ) {}
 
@@ -76,6 +82,13 @@ export class ImagesController {
     });
 
     return this.toPaginatedImagesResponseDto(result);
+  }
+
+  @Delete(':uuid')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteImageDocs()
+  async remove(@Param('uuid', ParseUUIDPipe) uuid: string): Promise<void> {
+    await this.deleteImageUseCase.execute({ uuid });
   }
 
   private toImageResponseDto(image: ImageResult): ImageResponseDto {

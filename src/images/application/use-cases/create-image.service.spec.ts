@@ -63,6 +63,7 @@ describe('CreateImageService', () => {
     create: jest.fn(),
     findByUuid: jest.fn(),
     findAll: jest.fn(),
+    deleteByUuid: jest.fn(),
   };
 
   const imageProcessorMock: jest.Mocked<ImageProcessor> = {
