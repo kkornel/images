@@ -1,14 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ImageUrlResolver } from '@/images/application/ports/out/image-url.resolver';
-import type { ImageResult } from '@/images/application/results/image.result';
 import {
   ImageProcessor,
   type ProcessedImage,
 } from '@/images/application/ports/out/image.processor';
 import { ImageRepository } from '@/images/application/ports/out/image.repository';
-import type { Image } from '@/images/domain/image';
 import { ImageStorage } from '@/images/application/ports/out/image.storage';
+import { UniqueIdGenerator } from '@/images/application/ports/out/unique-id.generator';
+import type { ImageResult } from '@/images/application/results/image.result';
+import type { Image } from '@/images/domain/image';
 import { CreateImageService } from '@/images/application/use-cases/create-image.service';
 
 function makeProcessedImage(
@@ -79,10 +80,17 @@ describe('CreateImageService', () => {
     resolveUrl: jest.fn(),
   };
 
+  const uniqueIdGeneratorMock: jest.Mocked<UniqueIdGenerator> = {
+    generate: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.resetAllMocks();
     imageUrlResolverMock.resolveUrl.mockImplementation(
       (key: string) => `https://cdn.example.com/${key}`,
+    );
+    uniqueIdGeneratorMock.generate.mockReturnValue(
+      '550e8400-e29b-41d4-a716-446655440000',
     );
 
     const module: TestingModule = await Test.createTestingModule({
@@ -103,6 +111,10 @@ describe('CreateImageService', () => {
         {
           provide: ImageUrlResolver,
           useValue: imageUrlResolverMock,
+        },
+        {
+          provide: UniqueIdGenerator,
+          useValue: uniqueIdGeneratorMock,
         },
       ],
     }).compile();
@@ -131,6 +143,7 @@ describe('CreateImageService', () => {
       targetWidth: input.width,
       targetHeight: input.height,
     });
+    expect(uniqueIdGeneratorMock.generate).toHaveBeenCalledTimes(1);
     expect(imageStorageMock.upload).toHaveBeenCalledTimes(1);
     expect(imageRepositoryMock.create).toHaveBeenCalledTimes(1);
     expect(imageUrlResolverMock.resolveUrl).toHaveBeenCalledWith(

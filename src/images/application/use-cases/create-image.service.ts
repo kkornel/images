@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import { Injectable } from '@nestjs/common';
 
 import type { CreateImageCommand } from '@/images/application/commands/create-image.command';
@@ -9,6 +7,7 @@ import { ImageProcessor } from '@/images/application/ports/out/image.processor';
 import { ImageRepository } from '@/images/application/ports/out/image.repository';
 import { ImageStorage } from '@/images/application/ports/out/image.storage';
 import { ImageUrlResolver } from '@/images/application/ports/out/image-url.resolver';
+import { UniqueIdGenerator } from '@/images/application/ports/out/unique-id.generator';
 import type { ImageResult } from '@/images/application/results/image.result';
 
 @Injectable()
@@ -18,6 +17,7 @@ export class CreateImageService extends CreateImageUseCase {
     private readonly imageProcessor: ImageProcessor,
     private readonly imageStorage: ImageStorage,
     private readonly imageUrlResolver: ImageUrlResolver,
+    private readonly uniqueIdGenerator: UniqueIdGenerator,
   ) {
     super();
   }
@@ -29,7 +29,7 @@ export class CreateImageService extends CreateImageUseCase {
       targetHeight: command.height,
     });
 
-    const imageUuid = randomUUID();
+    const imageUuid = this.uniqueIdGenerator.generate();
     const storageKey = `${imageUuid}.${processedImage.extension}`;
 
     await this.imageStorage.upload({
