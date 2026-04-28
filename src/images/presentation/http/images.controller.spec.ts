@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { CreateImageUseCase } from '@/images/application/ports/in/create-image.use-case';
+import { DeleteImageUseCase } from '@/images/application/ports/in/delete-image.use-case';
 import { GetImageUseCase } from '@/images/application/ports/in/get-image.use-case';
 import { ListImagesUseCase } from '@/images/application/ports/in/list-images.use-case';
 import type { ImageResult } from '@/images/application/results/image.result';
@@ -9,6 +10,7 @@ import type { PaginatedResult } from '@/images/application/results/paginated-res
 import { CreateImageDto } from './dto/create-image.dto';
 import { ListImagesQueryDto } from './dto/list-images-query.dto';
 import { ImagesController } from './images.controller';
+import { ImagesApiKeyGuard } from './guards/images-api-key.guard';
 
 function makeImageResult(overrides: Partial<ImageResult> = {}): ImageResult {
   return {
@@ -52,6 +54,10 @@ describe('ImagesController', () => {
     execute: jest.fn(),
   };
 
+  const deleteImageUseCaseMock: jest.Mocked<DeleteImageUseCase> = {
+    execute: jest.fn(),
+  };
+
   const listImagesUseCaseMock: jest.Mocked<ListImagesUseCase> = {
     execute: jest.fn(),
   };
@@ -59,7 +65,7 @@ describe('ImagesController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const module: TestingModule = await Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
       controllers: [ImagesController],
       providers: [
         {
@@ -71,11 +77,21 @@ describe('ImagesController', () => {
           useValue: getImageUseCaseMock,
         },
         {
+          provide: DeleteImageUseCase,
+          useValue: deleteImageUseCaseMock,
+        },
+        {
           provide: ListImagesUseCase,
           useValue: listImagesUseCaseMock,
         },
       ],
-    }).compile();
+    });
+
+    moduleBuilder.overrideGuard(ImagesApiKeyGuard).useValue({
+      canActivate: () => true,
+    });
+
+    const module: TestingModule = await moduleBuilder.compile();
 
     controller = module.get<ImagesController>(ImagesController);
   });

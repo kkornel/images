@@ -144,6 +144,11 @@ class EnvironmentVariables {
   @IsDefined()
   @IsBoolean()
   AWS_S3_FORCE_PATH_STYLE: boolean;
+
+  @Transform(trimStringTransform)
+  @IsDefined()
+  @IsString()
+  IMAGES_API_KEY: string;
 }
 
 let validatedEnvironment: EnvironmentVariables | null = null;
@@ -189,6 +194,7 @@ function toEnvironmentStrings(
     AWS_S3_BUCKET: environment.AWS_S3_BUCKET,
     AWS_S3_ENDPOINT: environment.AWS_S3_ENDPOINT,
     AWS_S3_FORCE_PATH_STYLE: String(environment.AWS_S3_FORCE_PATH_STYLE),
+    IMAGES_API_KEY: environment.IMAGES_API_KEY,
   };
 }
 

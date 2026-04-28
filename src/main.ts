@@ -39,6 +39,15 @@ function setupSwagger(app: INestApplication) {
     )
     .setVersion('1.0')
     .addTag('images', 'Operations for managing image resources')
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'x-api-key',
+        in: 'header',
+        description: 'API key required to access images routes.',
+      },
+      'images-api-key',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

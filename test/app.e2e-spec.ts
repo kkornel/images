@@ -7,12 +7,14 @@ import { APPLICATION_ERROR_CODES } from '../src/common/application-error-codes';
 import { ApplicationExceptionFilter } from '../src/common/application-exception.filter';
 import { ApplicationException } from '../src/common/application.exception';
 import { CreateImageUseCase } from '../src/images/application/ports/in/create-image.use-case';
+import { DeleteImageUseCase } from '../src/images/application/ports/in/delete-image.use-case';
 import { GetImageUseCase } from '../src/images/application/ports/in/get-image.use-case';
 import { ListImagesUseCase } from '../src/images/application/ports/in/list-images.use-case';
 import type { ImageResult } from '../src/images/application/results/image.result';
 import type { PaginatedResult } from '../src/images/application/results/paginated-result';
 import { InvalidImageFileException } from '../src/images/errors/invalid-image-file.exception';
 import { ImagesController } from '../src/images/presentation/http/images.controller';
+import { ImagesApiKeyGuard } from '../src/images/presentation/http/guards/images-api-key.guard';
 
 type ErrorResponseBody = {
   statusCode: number;
@@ -70,12 +72,16 @@ describe('Images HTTP API (e2e)', () => {
     execute: jest.fn(),
   };
 
+  const deleteImageUseCaseMock: jest.Mocked<DeleteImageUseCase> = {
+    execute: jest.fn(),
+  };
+
   const listImagesUseCaseMock: jest.Mocked<ListImagesUseCase> = {
     execute: jest.fn(),
   };
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
       controllers: [ImagesController],
       providers: [
         {
@@ -87,11 +93,21 @@ describe('Images HTTP API (e2e)', () => {
           useValue: getImageUseCaseMock,
         },
         {
+          provide: DeleteImageUseCase,
+          useValue: deleteImageUseCaseMock,
+        },
+        {
           provide: ListImagesUseCase,
           useValue: listImagesUseCaseMock,
         },
       ],
-    }).compile();
+    });
+
+    moduleBuilder.overrideGuard(ImagesApiKeyGuard).useValue({
+      canActivate: () => true,
+    });
+
+    const moduleFixture: TestingModule = await moduleBuilder.compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalFilters(new ApplicationExceptionFilter());

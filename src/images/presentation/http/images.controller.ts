@@ -10,9 +10,10 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import type { Express } from 'express';
 
 import { CreateImageUseCase } from '@/images/application/ports/in/create-image.use-case';
@@ -31,10 +32,16 @@ import {
   PaginatedImagesResponseDto,
 } from '@/images/presentation/http/dto/image-response.dto';
 import { ListImagesQueryDto } from '@/images/presentation/http/dto/list-images-query.dto';
+import { ImagesApiKeyGuard } from '@/images/presentation/http/guards/images-api-key.guard';
 import { ImageUploadInterceptor } from '@/images/presentation/http/interceptors/image-upload.interceptor';
 import { ImageFileValidationPipe } from '@/images/presentation/http/pipes/image-file-validation.pipe';
 
 @ApiTags('images')
+@ApiSecurity('images-api-key')
+@ApiUnauthorizedResponse({
+  description: 'The request is missing a valid API key.',
+})
+@UseGuards(ImagesApiKeyGuard)
 @Controller('images')
 export class ImagesController {
   constructor(

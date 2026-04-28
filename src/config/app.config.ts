@@ -7,5 +7,6 @@ export default registerAs('app', () => {
 
   return {
     port: environment.PORT,
+    imagesApiKey: environment.IMAGES_API_KEY,
   };
 });
