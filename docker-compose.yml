@@ -1,4 +1,31 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: images_api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - localstack
+    ports:
+      - '${PORT}:3000'
+    environment:
+      PORT: 3000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_SYNCHRONIZE: ${DATABASE_SYNCHRONIZE}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_S3_FORCE_PATH_STYLE: 'true'
+      IMAGES_API_KEY: ${IMAGES_API_KEY}
+
   postgres:
     image: postgres:18.3
     container_name: images_postgres
